@@ -1,2 +1,3 @@
 # ChemicalConsumables
-Chemical Consumables Accaunting Program
+Chemical Consumables Accounting Program
+JavaFX, Hibernate
