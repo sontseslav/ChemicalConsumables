@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import java.lang.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="274.0" prefWidth="601.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ua.pp.mardes.chemconsumables.view.ConsumableEditDialogController">
    <children>
@@ -29,18 +39,17 @@
             </Label>
             <TextField fx:id="consumNameField" prefHeight="25.0" prefWidth="126.0" GridPane.columnIndex="1" />
             <Label text="Клас чистоти" GridPane.rowIndex="1" />
-            <TextField fx:id="purityClassField" prefHeight="25.0" prefWidth="92.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             <Label text="НД на ВМ" GridPane.rowIndex="2" />
             <TextField fx:id="consumISOField" prefHeight="25.0" prefWidth="65.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <Label prefHeight="34.0" prefWidth="65.0" text="Паспорт якості" wrapText="true" GridPane.rowIndex="3" />
+            <Label prefHeight="34.0" prefWidth="103.0" text="Номер партії" wrapText="true" GridPane.rowIndex="3" />
             <TextField fx:id="qualityCertificateField" prefHeight="25.0" prefWidth="65.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             <Label prefHeight="15.0" prefWidth="103.0" text="Виготовлений" textAlignment="CENTER" GridPane.rowIndex="4" />
             <DatePicker fx:id="productionDateField" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-            <Label prefHeight="34.0" prefWidth="82.0" text="Термін зберігання" wrapText="true" GridPane.columnIndex="2">
+            <Label prefHeight="34.0" prefWidth="121.0" text="Термін зберігання (міс.)" wrapText="true" GridPane.columnIndex="2">
                <GridPane.margin>
                   <Insets left="10.0" />
                </GridPane.margin></Label>
-            <TextField fx:id="usefulTimeField" prefHeight="25.0" prefWidth="126.0" GridPane.columnIndex="3" />
+            <TextField fx:id="usefulTimeField" onAction="#handleUsefulTimeAction" onKeyPressed="#handleUsefulTimeAction" prefHeight="25.0" prefWidth="126.0" GridPane.columnIndex="3" />
             <Label prefHeight="15.0" prefWidth="122.0" text="Придатний до" textAlignment="CENTER" wrapText="true" GridPane.columnIndex="2" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets left="10.0" />
@@ -56,6 +65,7 @@
                   <Insets left="10.0" />
                </GridPane.margin></Label>
             <DatePicker fx:id="spendDateField" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+            <ComboBox fx:id="purityClassField" editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
          </children>
       </GridPane>
       <Button layoutX="373.0" layoutY="239.0" mnemonicParsing="false" onAction="#handleOkButton" text="Застосувати" />

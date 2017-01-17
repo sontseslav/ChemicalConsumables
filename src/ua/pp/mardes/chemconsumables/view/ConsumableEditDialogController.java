@@ -1,13 +1,17 @@
 package ua.pp.mardes.chemconsumables.view;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import ua.pp.mardes.chemconsumables.model.Consumable;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Created by coder on 10.01.17.
@@ -15,14 +19,10 @@ import java.time.LocalDate;
 
 public class ConsumableEditDialogController {
 
-    private Stage dialogStage;
-    private Consumable consumable;
-    private boolean okPressed = false;
-
     @FXML
     private TextField consumNameField;
     @FXML
-    private TextField purityClassField;
+    private ComboBox<String> purityClassField;
     @FXML
     private TextField consumISOField;
     @FXML
@@ -38,15 +38,28 @@ public class ConsumableEditDialogController {
     private TextField consumQuantityField;
     @FXML
     private DatePicker spendDateField = new DatePicker();
-    //must be modified on access
-    //@FXML
-    //private DatePicker lastChangeField = new DatePicker();
+
+    private ObservableList<String> purityClassFieldData =
+            FXCollections.observableArrayList();
+    private Stage dialogStage;
+    private Consumable consumable;
+    private boolean okPressed = false;
 
     /**
      * Controller initializer, calls automatically on fxml load
      */
     @FXML
-    private void initialize(){}
+    private void initialize(){
+        purityClassFieldData.add("ос.ч.");
+        purityClassFieldData.add("х.ч.");
+        purityClassFieldData.add("ч.д.а.");
+        purityClassFieldData.add("ч.");
+        purityClassFieldData.add("оч.");
+        purityClassFieldData.add("техн.");
+        purityClassFieldData.add("сирий");
+        purityClassFieldData.add("фарм.");
+        purityClassField.setItems(purityClassFieldData);
+    }
 
     /**
      * Set dialog stage from outside
@@ -63,7 +76,7 @@ public class ConsumableEditDialogController {
         this.consumable = consumable;
 
         this.consumNameField.setText(consumable.getConsumName());
-        this.purityClassField.setText(consumable.getPurityClass());
+        this.purityClassField.setValue(consumable.getPurityClass());
         this.consumISOField.setText(consumable.getConsumISO());
         this.qualityCertificateField.setText(consumable.getQualityPass());
         this.productionDateField.setValue(consumable.getProductionDate());
@@ -73,8 +86,6 @@ public class ConsumableEditDialogController {
         this.expirationTimeField.setValue(consumable.getExpirationDate());
         this.consumQuantityField.setText(consumable.getConsumQuantity());
         this.spendDateField.setValue(consumable.getSpendDate());
-        // not editable
-        // this.lastChangeField.setValue(consumable.getLastChange());
     }
 
     /**
@@ -92,7 +103,7 @@ public class ConsumableEditDialogController {
     private void handleOkButton(){
         if (isFieldsValid()){
             consumable.setConsumName(consumNameField.getText());
-            consumable.setPurityClass(purityClassField.getText());
+            consumable.setPurityClass(purityClassField.getValue());
             consumable.setConsumISO(consumISOField.getText());
             consumable.setQualityPass(qualityCertificateField.getText());
             consumable.setProductionDate(productionDateField.getValue());
@@ -117,6 +128,14 @@ public class ConsumableEditDialogController {
     }
 
     /**
+     * Clear expiration date on useful time changes
+     */
+    @FXML
+    private void handleUsefulTimeAction(){
+        expirationTimeField.setValue(null);
+    }
+
+    /**
      * Input fields validator
      * @return true if all fields values is correct
      */
@@ -126,10 +145,11 @@ public class ConsumableEditDialogController {
                 consumNameField.getText().matches("^\\s+")){
             errMsg += "Відсутня назва реактиву.\n";
         }
-        if (purityClassField.getText() == null || purityClassField.getText().length() == 0 ||
+        //may be empty
+        /*if (purityClassField.getText() == null || purityClassField.getText().length() == 0 ||
                 purityClassField.getText().matches("^\\s+")){
             errMsg += "Відсутній клас чистоти.\n";
-        }
+        }*/
         /*if (consumISOField.getText() == null || consumISOField.getText().length() == 0 ||
                 consumISOField.getText().matches("^\\s+")){
             errMsg += "\n";
@@ -144,23 +164,37 @@ public class ConsumableEditDialogController {
                 productionDateField.getValue().getYear() < LocalDate.of(1990, 1, 1).getYear()){//critical year
             errMsg += "Неправильна дата виготовлення.\n";
         }
-        // Deprecate if calculate it automatically
-        if (usefulTimeField.getText() == null || usefulTimeField.getText().length() == 0){
-            errMsg += "Відсутній термін зберігання.\n";
-        }else{
-            int period = 0;
+
+        if (usefulTimeField.getText() != null || usefulTimeField.getText().length() != 0){
             try{
-                period = Integer.parseInt(usefulTimeField.getText());
+                Integer.parseInt(usefulTimeField.getText());
             }catch (NumberFormatException e){
                 errMsg += "Термін зберігання вказується цілим числом (кількість місяців).\n";
             }
-            if (period <= 0){
-                errMsg += "Термін зберігання має бути більшим від нуля.\n";
-            }
         }
 
-        if (expirationTimeField.getValue() == null || expirationTimeField.getValue().toString().length() == 0 ||
-                expirationTimeField.getValue().getYear() < LocalDate.now().getYear()){
+        if ((expirationTimeField.getValue() == null || expirationTimeField.getValue().toString().length() == 0) &&
+                (usefulTimeField.getText() == null || usefulTimeField.getText().length() == 0 ||
+                        Integer.parseInt(usefulTimeField.getText())==0)){
+            //no exp date and no useful time
+            errMsg += "Кінцева дата зберігання не може бути розрахована.\n";
+        }else if ((usefulTimeField.getText() != null || usefulTimeField.getText().length() != 0) &&
+                Integer.parseInt(usefulTimeField.getText()) > 0 &&
+                (expirationTimeField.getValue() == null || expirationTimeField.getValue().toString().length() == 0)){
+            //if usef. time presented and exp date - not
+            expirationTimeField.setValue(productionDateField.getValue().plusMonths(
+                    Integer.parseInt(usefulTimeField.getText())
+            ));
+        }else if ((expirationTimeField.getValue() != null || expirationTimeField.getValue().toString().length() != 0) &&
+                (usefulTimeField.getText() == null || usefulTimeField.getText().length() == 0 ||
+                        Integer.parseInt(usefulTimeField.getText())==0)) {
+            //not presented useful time it calculated based on prod abd exp dates
+            //can be safely converted to int
+            usefulTimeField.setText(Integer.toString(
+                    (int) Math.abs(ChronoUnit.MONTHS.between(
+                            expirationTimeField.getValue(), productionDateField.getValue())
+                    )));
+        }else if (expirationTimeField.getValue().getYear() < LocalDate.now().getYear()){
             errMsg += "Неправильна кінцева дата зберігання.\n";
         }
         if (consumQuantityField.getText() == null || consumQuantityField.getText().length() == 0 ||
@@ -175,11 +209,13 @@ public class ConsumableEditDialogController {
             // no errors detected
             return true;
         }else{
+            expirationTimeField.setValue(null);
+            usefulTimeField.setText(Integer.toString(0));
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.initOwner(dialogStage);
             alert.setTitle("Помилка введення");
             alert.setHeaderText("Деякі поля заповнені некоректно:");
-            alert.setContentText(errMsg);
+            alert.setContentText(errMsg+"\n");
             alert.showAndWait();
             return false;
         }
