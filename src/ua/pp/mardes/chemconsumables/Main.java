@@ -5,15 +5,18 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import ua.pp.mardes.chemconsumables.db.DbController;
 import ua.pp.mardes.chemconsumables.model.Consumable;
 import ua.pp.mardes.chemconsumables.view.ConsumableEditDialogController;
 import ua.pp.mardes.chemconsumables.view.ConsumablesController;
 
 import java.io.IOException;
+import java.util.List;
 
 public class Main extends Application {
 
@@ -24,6 +27,16 @@ public class Main extends Application {
      * The data as an observable list of Consumables
      */
     private ObservableList<Consumable> consumableData = FXCollections.observableArrayList();
+
+    /**
+     * DbController instance
+     */
+    private DbController dbControllerInstanse;
+
+    /**
+     *
+     * @param primaryStage
+     */
 
     @Override
     public void start(Stage primaryStage){
@@ -38,15 +51,32 @@ public class Main extends Application {
      */
     public Main(){
         //add some sample data
-        consumableData.add(new Consumable("Хлороформ"));
-        consumableData.add(new Consumable("Аміак водний"));
+        //consumableData.add(new Consumable("Хлороформ"));
+        //consumableData.add(new Consumable("Аміак водний"));
     }
 
     /**
+     * Refactoring needed:
+     * move this code to private void helperAddConsumable()
+     *
      * Returns the data as ObservableList
      * @return
      */
     public ObservableList<Consumable> getConsumableData(){
+        //retrieve data from db
+        dbControllerInstanse = new DbController();
+        List<Consumable> listFromDb = dbControllerInstanse.retrieveConsumableList();
+        if (listFromDb == null){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.initOwner(primaryStage);
+            alert.setTitle("Помилка читання");
+            alert.setHeaderText(null);
+            alert.setContentText("Помилка читання з бази даних!");
+            alert.showAndWait();
+        }else{
+            //we add ALL items from DB here
+            consumableData.addAll(listFromDb);
+        }
         return consumableData;
     }
 

@@ -1,11 +1,13 @@
 package ua.pp.mardes.chemconsumables.model;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.StringProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
+import org.hibernate.annotations.GenericGenerator;
+
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Id;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Column;
 
 import java.time.LocalDate;
 
@@ -14,21 +16,22 @@ import java.time.LocalDate;
  * Created by coder on 03.01.17.
  * @author Stanislav Khvalinsky
  */
-
+@Entity
+@Table
 public class Consumable {
     //not for production
     private static int counter = 0;
-    private final IntegerProperty number;
-    private final StringProperty consumName;
-    private final StringProperty purityClass;
-    private final StringProperty consumISO;
-    private final StringProperty qualityPass;
-    private final ObjectProperty<LocalDate> productionDate;
-    private final IntegerProperty usefulTime; //in month
-    private final ObjectProperty<LocalDate> expirationDate;
-    private final StringProperty consumQuantity;
-    private final ObjectProperty<LocalDate> spendDate;
-    private final ObjectProperty<LocalDate> lastChange;
+    private LongProperty number;
+    private StringProperty consumName;
+    private StringProperty purityClass;
+    private StringProperty consumISO;
+    private StringProperty qualityPass;
+    private ObjectProperty<LocalDate> productionDate;
+    private IntegerProperty usefulTime; //in month
+    private ObjectProperty<LocalDate> expirationDate;
+    private StringProperty consumQuantity;
+    private ObjectProperty<LocalDate> spendDate;
+    private ObjectProperty<LocalDate> lastChange;
 
     /**
      * for production number should be added while reading DB
@@ -39,11 +42,14 @@ public class Consumable {
     }
 
     /**
+     * Empty constructor for Hibernate
+     */
+    //public Consumable(){}
+
+    /**
      * Default constructor
      */
-    public Consumable(){
-        this(null,null,null,null,null,0,null,null,null,null);
-    }
+    public Consumable(){this(0, null,null,null,null,null,0,null,null,null,null);}
 
     /**
      * Regular constructor
@@ -59,12 +65,12 @@ public class Consumable {
      * @param spendDate
      * @param lastChange;
      */
-    public Consumable(String consumName, String purityClass, String consumISO,
+    public Consumable(long number, String consumName, String purityClass, String consumISO,
                       String qualityPass, LocalDate productionDate,
                       int usefulTime, LocalDate expirationDate, String consumQuantity,
                       LocalDate spendDate, LocalDate lastChange){
         //not for production
-        this.number = new SimpleIntegerProperty(counter);
+        this.number = new SimpleLongProperty(number);
         this.consumName = new SimpleStringProperty(consumName);
         this.purityClass = new SimpleStringProperty(purityClass);
         this.consumISO = new SimpleStringProperty(consumISO);
@@ -82,7 +88,7 @@ public class Consumable {
      * @param consumName
      */
     public Consumable(String consumName){
-        this.number = new SimpleIntegerProperty(counter);
+        this.number = new SimpleLongProperty(counter);
         this.consumName = new SimpleStringProperty(consumName);
         this.purityClass = new SimpleStringProperty("ч.д.а.");
         this.consumISO = new SimpleStringProperty("ГОСТ 3760");
@@ -95,18 +101,23 @@ public class Consumable {
         this.lastChange = new SimpleObjectProperty<LocalDate>(LocalDate.now().minusDays(15));
     }
 
-    public int getNumber(){
+    @Id
+    @GeneratedValue(generator = "increment")
+    @GenericGenerator(name = "increment", strategy = "increment")
+    @Column(nullable = false)
+    public Long getNumber(){
         return number.get();
     }
 
-    public IntegerProperty numberProperty(){
+    public LongProperty numberProperty(){
         return number;
     }
 
-    public void setNumber(int number) {
+    public void setNumber(Long number) {
         this.number.set(number);
     }
 
+    @Column(columnDefinition = "")
     public String getConsumName() {
         return consumName.get();
     }
