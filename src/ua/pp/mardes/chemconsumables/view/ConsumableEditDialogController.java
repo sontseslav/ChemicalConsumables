@@ -7,7 +7,9 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import ua.pp.mardes.chemconsumables.db.DbController;
 import ua.pp.mardes.chemconsumables.model.Consumable;
 
 import java.time.LocalDate;
@@ -43,6 +45,7 @@ public class ConsumableEditDialogController {
             FXCollections.observableArrayList();
     private Stage dialogStage;
     private Consumable consumable;
+    private DbController dbControllerInstance = null;
     private boolean okPressed = false;
 
     /**
@@ -112,6 +115,8 @@ public class ConsumableEditDialogController {
             consumable.setConsumQuantity(consumQuantityField.getText());
             consumable.setSpendDate(spendDateField.getValue());
             consumable.setLastChange(LocalDate.now());
+
+            prepareStoreConsumable(consumable);
 
             okPressed = true;
 
@@ -213,11 +218,33 @@ public class ConsumableEditDialogController {
             usefulTimeField.setText(Integer.toString(0));
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.initOwner(dialogStage);
+            alert.initModality(Modality.APPLICATION_MODAL);
+            //alert.setHeight(250);
             alert.setTitle("Помилка введення");
             alert.setHeaderText("Деякі поля заповнені некоректно:");
             alert.setContentText(errMsg+"\n");
             alert.showAndWait();
             return false;
+        }
+    }
+
+    private void prepareStoreConsumable(Consumable consumable){
+        dbControllerInstance = new DbController();
+        boolean isStoredOk = dbControllerInstance.storeConsumable(consumable);
+        if (isStoredOk){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.initOwner(dialogStage);
+            alert.setTitle("Вдале збереження");
+            alert.setHeaderText(null);
+            alert.setContentText("Дані успішно введені в базу даних.");
+            alert.showAndWait();
+        }else {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.initOwner(dialogStage);
+            alert.setTitle("Помилка збереження");
+            alert.setHeaderText(null);
+            alert.setContentText("Помилка внесення до бази даних.");
+            alert.showAndWait();
         }
     }
 }

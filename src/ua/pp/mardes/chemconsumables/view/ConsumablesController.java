@@ -7,6 +7,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import ua.pp.mardes.chemconsumables.Main;
+import ua.pp.mardes.chemconsumables.db.DbController;
 import ua.pp.mardes.chemconsumables.model.Consumable;
 
 import java.time.LocalDate;
@@ -22,7 +23,7 @@ public class ConsumablesController {
     private TableView<Consumable> consumableTable;
 
     @FXML
-    private TableColumn<Consumable, Integer> numberColumn;
+    private TableColumn<Consumable, Long> numberColumn;
     @FXML
     private TableColumn<Consumable, String> consumNameColumn;
     @FXML
@@ -85,7 +86,10 @@ public class ConsumablesController {
             //Get user's response
             Optional<ButtonType> result = alert.showAndWait();
             if (result.get() == ButtonType.OK){
-                consumableTable.getItems().remove(selectedIndex);
+                Consumable consumable = consumableTable.getSelectionModel().getSelectedItem();
+                if (prepareDeleteConsumable(consumable)) {
+                    consumableTable.getItems().remove(selectedIndex);
+                }
             }else{
                 alert.close();
             }
@@ -107,7 +111,9 @@ public class ConsumablesController {
         Consumable newConsumable = new Consumable();
         boolean isOkPressed = mainApp.showConsumablesEditDialog(newConsumable);
         if (isOkPressed){
-            mainApp.getConsumableData().add(newConsumable);
+            consumableTable.getItems().removeAll(consumableTable.getItems());
+            //by commenting the piece of code below, we prevent double-show of last added element
+            mainApp.getConsumableData()/*.add(newConsumable)*/;
         }
     }
 
@@ -128,6 +134,34 @@ public class ConsumablesController {
             alert.showAndWait();
         }
     }
+
+    /**
+     * Delete item
+     * @param consumable to remove
+     * @return true on success
+     */
+    private boolean prepareDeleteConsumable(Consumable consumable){
+        DbController dbControllerInstance = new DbController();
+        boolean isDeletedOk = dbControllerInstance.deleteConsumable(consumable);
+        if (isDeletedOk){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.initOwner(mainApp.getPrimaryStage());
+            alert.setTitle("Вдале видалення");
+            alert.setHeaderText(null);
+            alert.setContentText("Дані успішно видалені з бази даних.");
+            alert.showAndWait();
+            return true;
+        }else {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.initOwner(mainApp.getPrimaryStage());
+            alert.setTitle("Помилка видалення");
+            alert.setHeaderText(null);
+            alert.setContentText("Помилка видалення з бази даних.");
+            alert.showAndWait();
+            return false;
+        }
+    }
+
 
     /**
      * Called by Main to set reference on itself
